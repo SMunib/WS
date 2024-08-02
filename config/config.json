@@ -1,0 +1,9 @@
+{
+    "db": {
+        "username": "root",
+        "password": "",
+        "database": "WowSpent",
+        "host": "127.0.0.1",
+        "dialect": "mysql"
+    }
+}
