@@ -1,5 +1,6 @@
 const { User } = require("../models/index");
 const bcrypt = require("bcrypt");
+const _ = require("lodash");
 
 exports.login = async (req, res, next) => {
   try {
@@ -16,15 +17,19 @@ exports.login = async (req, res, next) => {
         .json({ code: 400, message: "Invalid Password", data: {} });
 
     if (user.isVerified === false)
-      return res
-        .status(400)
-        .json({
-          code: 400,
-          message: "Complete account verification.....",
-          data: {},
-        });
+      return res.status(400).json({
+        code: 400,
+        message: "Complete account verification.....",
+        data: {},
+      });
     const token = await user.generateToken();
-    return res.header("x-auth-token",token).json({code:201,message:"success",data: user});
+    return res
+      .header("x-auth-token", token)
+      .json({
+        code: 201,
+        message: "success",
+        data: _.pick(user, ["fullName"]),
+      });
   } catch (err) {
     next(err);
   }

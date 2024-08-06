@@ -2,6 +2,7 @@ const { User, Otp, Token } = require("../models/index");
 const generateOtp = require("../utils/generateOtp");
 const { Sequelize } = require("sequelize");
 const _ = require("lodash");
+const jwt = require("jsonwebtoken");
 
 exports.verify = async (req, res, next) => {
   const { otp, number } = req.body;
@@ -27,7 +28,7 @@ exports.verify = async (req, res, next) => {
         return res
           .status(400)
           .json({ code: 400, message: "Account creation failed", data: {} });
-      if (otp.otpType === "reset") {
+      if (latestOtp.otpType === "reset") {
         const secret = process.env.jwtSecretKey;
         const payload = {
           number: user.number,
@@ -51,6 +52,9 @@ exports.verify = async (req, res, next) => {
           .header("x-auth-token", token)
           .json({ code: 200, message: "success" });
       }
+      await Otp.destroy({
+        where: { otp: otp },
+      });
       return res.status(200).json({
         message: "success",
         code: 200,
@@ -67,7 +71,7 @@ exports.verify = async (req, res, next) => {
 };
 
 exports.resend = async (req, res, next) => {
-  const { number } = req.body;
+  const { number,type } = req.body;
   try {
     const { otp, expirationTime } = generateOtp();
     const user = await User.findOne({ where: { number: number } });
@@ -93,6 +97,7 @@ exports.resend = async (req, res, next) => {
       otp,
       expiresAt: expirationTime,
       userSlug: user.slug,
+      otpType: type,
     });
     return res.status(200).json({ message: "Otp sent", otp, code: 200 });
   } catch (err) {

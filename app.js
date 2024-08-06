@@ -10,13 +10,14 @@ const app = express();
 
 async function initialize() {
   try {
+    app.use(upload.any());
     await initializeDB(app);
 
     const server = http.createServer(app);
 
+    
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-    app.use(upload.any());
     app.use("/uploads", express.static("uploads"));
 
     const port = 3002;

@@ -66,10 +66,12 @@ exports.forgetPassword = async (req, res, next) => {
     });
     if (!user) return res.status(400).send("User not found");
     const { otp, expirationTime } = generateOtp();
+    await Otp.destroy({ where: { userSlug: slug } });
     await Otp.create({
       otp: otp,
       expiresAt: expirationTime,
       userSlug: user.slug,
+      otpType: "reset",
     });
     return res.json({ code: 200, message: "success", data: {} });
   } catch (err) {
@@ -102,8 +104,7 @@ exports.resetPassword = async (req, res, next) => {
     if (!payload) return res.status(400).send("Verification failed");
 
     if (password !== confirmPassword) {
-      req.flash("error", "Passwords do not match");
-      return res.redirect("back");
+      return res.json({ code: 400, message: "Passowrds do not match" });
     }
     const salt = await bcrypt.genSalt(10);
     const hashedpassword = await bcrypt.hash(password, salt);

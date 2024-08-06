@@ -6,7 +6,6 @@ const tokenTypes = {
 const userTypes = {
   RESTURANT: "resturant",
   USER: "user",
-  ADMIN: "admin",
 };
 
 const otpTypes = {
