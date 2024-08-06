@@ -7,23 +7,36 @@ const jwt = require("jsonwebtoken");
 exports.verify = async (req, res, next) => {
   const { otp, number } = req.body;
   try {
-    const user = await User.findOne({ where: { number: number } });
-    if (!user)
+    const userWithLatestOtp = await User.findOne({
+      where: { number: number },
+      include: [
+        {
+          model: Otp,
+          where: { userSlug: sequelize.col("User.slug") },
+          required: false,
+          order: [["createdAt", "DESC"]],
+          limit: 1,
+        },
+      ],
+    });
+    if (!userWithLatestOtp) {
       return res
         .status(400)
         .json({ code: 400, message: "User not found", data: {} });
-    const latestOtp = await Otp.findOne({
-      where: { userSlug: user.slug },
-      order: [["createdAt", "DESC"]],
-    });
-    if (!otp) return res.status(404).json({ message: "Otp not found" });
+    }
+    const latestOtp = userWithLatestOtp.Otps[0];
+    if (!latestOtp) {
+      return res
+        .status(400)
+        .json({ code: 400, message: "No OTP found for user", data: {} });
+    }
     if (new Date() > new Date(otp.expiresAt)) {
       return res
         .status(400)
         .json({ message: "OTP expired or invalid. Ask for a new otp" });
     }
     if (otp === latestOtp.otp) {
-      const updated = await user.update({ isVerified: true });
+      const updated = await userWithLatestOtp.update({ isVerified: true });
       if (!updated)
         return res
           .status(400)
@@ -31,26 +44,28 @@ exports.verify = async (req, res, next) => {
       if (latestOtp.otpType === "reset") {
         const secret = process.env.jwtSecretKey;
         const payload = {
-          number: user.number,
-          slug: user.slug,
+          number: userWithLatestOtp.number,
+          slug: userWithLatestOtp.slug,
         };
         const token = jwt.sign(payload, secret, { expiresIn: "15m" });
         await Token.destroy({
           where: {
-            userSlug: user.slug,
+            userSlug: userWithLatestOtp.slug,
           },
         });
         await Token.create({
           key: token,
-          userSlug: user.slug,
+          userSlug: userWithLatestOtp.slug,
           tokenType: "reset",
         });
         await Otp.destroy({
           where: { otp: otp },
         });
-        return res
-          .header("x-auth-token", token)
-          .json({ code: 200, message: "success" });
+        return res.json({
+          code: 200,
+          message: "success",
+          data: { token: token },
+        });
       }
       await Otp.destroy({
         where: { otp: otp },
@@ -58,7 +73,7 @@ exports.verify = async (req, res, next) => {
       return res.status(200).json({
         message: "success",
         code: 200,
-        data: _.pick(["fullName", "email"]),
+        data: _.pick(userWithLatestOtp, ["fullName", "email"]),
       });
     } else {
       return res
@@ -71,7 +86,7 @@ exports.verify = async (req, res, next) => {
 };
 
 exports.resend = async (req, res, next) => {
-  const { number,type } = req.body;
+  const { number, type } = req.body;
   try {
     const { otp, expirationTime } = generateOtp();
     const user = await User.findOne({ where: { number: number } });
@@ -89,9 +104,11 @@ exports.resend = async (req, res, next) => {
     });
 
     if (otpCount >= MAX_OTP_REQUESTS) {
-      return res
-        .status(429)
-        .json({ message: "Too many OTP requests. Try again later." });
+      return res.status(429).json({
+        code: 429,
+        message: "Too many OTP requests. Try again later.",
+        data: {},
+      });
     }
     await Otp.create({
       otp,
@@ -99,7 +116,9 @@ exports.resend = async (req, res, next) => {
       userSlug: user.slug,
       otpType: type,
     });
-    return res.status(200).json({ message: "Otp sent", otp, code: 200 });
+    return res
+      .status(200)
+      .json({ message: "Otp sent", data: { otp: otp }, code: 200 });
   } catch (err) {
     console.log(err);
     next(err);

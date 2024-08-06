@@ -22,7 +22,7 @@ const Otp = sequelize.define(
       allowNull: false,
     },
     otpType: {
-      type: DataTypes.ENUM,
+      type: DataTypes.STRING,
       values: Object.values(otpTypes),
       allowNull: false,
     }

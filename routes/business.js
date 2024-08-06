@@ -7,6 +7,8 @@ router.route("/:id").post(validateBusiness, business.details);
 router.route("/add/:id").post(validateItem, business.addProduct);
 router.route("/:id").get(business.displayMenu);
 router.route("/day/:id").post(business.day);
+router.route("/deselect/:id").post(business.deselect);
 router.route("/time/:id").post(business.timeOne);
 router.route("/alltimes/:id").post(business.timeAll);
+
 module.exports = router;

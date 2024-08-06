@@ -11,21 +11,19 @@ exports.signup = async (req, res, next) => {
     if (existingUser) {
       return res
         .status(400)
-        .json({ code: 400, message: "Email already in use" });
+        .json({ code: 400, message: "Email already in use" ,data: {}});
     }
     if (password !== confirmPassword) {
       return res
         .status(400)
-        .json({ code: 400, message: "Password does not match" });
+        .json({ code: 400, message: "Password does not match" ,data: {}});
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const { otp, expirationTime } = generateOtp();
     const role = await Role.findOne({ where: { role: req.params.role } });
     if (!role) {
-      return res.status(400).send("Invalid role");
+      return res.status(400).json({code:404,message:"Invalid role",data:{}});
     }
-    const transaction = await sequelize.transaction();
-    try {
       const newUser = await User.create(
         {
           fullName,
@@ -34,7 +32,6 @@ exports.signup = async (req, res, next) => {
           password: hashedPassword,
           role: role.slug,
         },
-        { transaction }
       );
       const newOtp = await Otp.create(
         {
@@ -43,14 +40,8 @@ exports.signup = async (req, res, next) => {
           userSlug: newUser.slug,
           otpType: "access",
         },
-        { transaction }
       );
-      await transaction.commit();
       return res.status(201).json({ code: 201, message: "success", data: {} });
-    } catch (err) {
-      await transaction.rollback();
-      next(err);
-    }
   } catch (err) {
     next(err);
   }
@@ -64,7 +55,7 @@ exports.forgetPassword = async (req, res, next) => {
         email: email,
       },
     });
-    if (!user) return res.status(400).send("User not found");
+    if (!user) return res.status(400).json({code:400,message:"user not found", data: {}});
     const { otp, expirationTime } = generateOtp();
     await Otp.destroy({ where: { userSlug: slug } });
     await Otp.create({
@@ -101,19 +92,16 @@ exports.resetPassword = async (req, res, next) => {
   const secret = process.env.jwtSecretKey;
   try {
     const payload = jwt.verify(token, secret);
-    if (!payload) return res.status(400).send("Verification failed");
+    if (!payload) return res.status(400).json({code:400,message:"JWT Verification failed",data: {}});
 
     if (password !== confirmPassword) {
-      return res.json({ code: 400, message: "Passowrds do not match" });
+      return res.json({ code: 400, message: "Passowrds do not match",data: {} });
     }
     const salt = await bcrypt.genSalt(10);
     const hashedpassword = await bcrypt.hash(password, salt);
 
     const updatedUser = user.update({ password: hashedpassword });
-    if (!updatedUser) {
-      req.flash("error", "Password reset failed");
-      return res.redirect("back");
-    }
+    if (!updatedUser) return res.json({code:400,message:"User updation failed",data: {}});
     await Token.destroy({
       where: {
         userSlug: slug,
@@ -121,7 +109,7 @@ exports.resetPassword = async (req, res, next) => {
     });
     return res
       .status(200)
-      .json({ code: 200, message: "success", data: updatedUser });
+      .json({ code: 200, message: "success", data: _.pick(updatedUser,["fullName","email","number"])});
   } catch (err) {
     next(err);
   }

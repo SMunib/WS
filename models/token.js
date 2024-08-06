@@ -18,7 +18,7 @@ const Token = sequelize.define(
       allowNull: false,
     },
     tokenType: {
-      type: DataTypes.ENUM,
+      type: DataTypes.STRING,
       values: Object.values(tokenTypes),
       allowNull: false,
     },

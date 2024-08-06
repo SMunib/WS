@@ -14,7 +14,11 @@ const defineAssociations = async () => {
     sourceKey: "role",
     onDelete: "CASCADE",
   });
-  Role.hasMany(User, { foreignKey: "role", sourceKey: "role" });
+  Role.hasMany(User, {
+    foreignKey: "role",
+    sourceKey: "role",
+    onDelete: "CASCADE",
+  });
 
   User.hasMany(Token, {
     foreignKey: "userSlug",

@@ -8,7 +8,7 @@ async function initializeDB(app) {
   await defineAssociations();
   await syncDB();
 
-  const roles = ["user", "admin", "resturant"];
+  const roles = ["user", "resturant"];
   for (const role of roles) {
     await Role.findOrCreate({ where: { role: role } });
   }

@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../startup/db");
 const { v4: uuidv4 } = require("uuid");
+const {Days} = require("../utils/types");
 
 const businessHours = sequelize.define(
   "businessHours",
@@ -13,8 +14,9 @@ const businessHours = sequelize.define(
       primaryKey: true,
     },
     day: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.ENUM,
       allowNull: false,
+      values: Object.values(Days),
     },
     openTime: {
       type: DataTypes.TIME,

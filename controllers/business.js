@@ -98,8 +98,11 @@ exports.day = async (req, res, next) => {
   const data = req.body;
   const business = req.params.id;
   try {
-    const check = await businessHours.findOne({where: {day: data.day, businessSlug: business}});
-    if (check) return res.json({code:400,message:"Day already selected",data: {}});
+    const check = await businessHours.findOne({
+      where: { day: data.day, businessSlug: business },
+    });
+    if (check)
+      return res.json({ code: 400, message: "Day already selected", data: {} });
     const day = await businessHours.create({
       day: data.day,
       businessSlug: business,
@@ -111,6 +114,19 @@ exports.day = async (req, res, next) => {
       message: "success",
       data: _.pick(day, ["day"]),
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deselect = async (req, res, next) => {
+  const business = req.params.id;
+  const data = req.body;
+  try {
+    await businessHours.destroy({
+      where: { day: data.day, businessSlug: business },
+    });
+    return res.json({ code: 200, message: "removed work day", data: {} });
   } catch (err) {
     next(err);
   }
@@ -128,7 +144,7 @@ exports.timeOne = async (req, res, next) => {
     timing.openTime = data.openTime;
     timing.closeTime = data.closeTime;
     await timing.save();
-    return res.json({ code: 200, message: "success", data: {} });
+    return res.json({ code: 200, message: "Time set successfully", data: {} });
   } catch (err) {
     next(err);
   }
@@ -149,7 +165,7 @@ exports.timeAll = async (req, res, next) => {
         },
       }
     );
-    return res.json({ code: 200, message: "success", data: timing });
+    return res.json({ code: 200, message: "timings set successfully", data: timing });
   } catch (err) {
     next(err);
   }

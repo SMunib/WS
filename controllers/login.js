@@ -1,4 +1,5 @@
-const { User } = require("../models/index");
+const { User,Otp } = require("../models/index");
+const generateOtp = require("../utils/generateOtp");
 const bcrypt = require("bcrypt");
 const _ = require("lodash");
 
@@ -16,19 +17,26 @@ exports.login = async (req, res, next) => {
         .status(400)
         .json({ code: 400, message: "Invalid Password", data: {} });
 
-    if (user.isVerified === false)
-      return res.status(400).json({
-        code: 400,
-        message: "Complete account verification.....",
-        data: {},
+    if (user.isVerified === false){
+      const { otp , expirationTime} = generateOtp();
+      await Otp.create({
+          otp: otp,
+          expiresAt: expirationTime,
+          userSlug: newUser.slug,
+          otpType: "access",
       });
+      return res.status(428).json({
+        code: 428,
+        message: "Complete account verification.....",
+        data: {otp: otp},
+      });
+    }
     const token = await user.generateToken();
     return res
-      .header("x-auth-token", token)
       .json({
         code: 201,
         message: "success",
-        data: _.pick(user, ["fullName"]),
+        data: _.pick(user, ["fullName","number","email"],token),
       });
   } catch (err) {
     next(err);
