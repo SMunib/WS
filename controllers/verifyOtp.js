@@ -12,8 +12,10 @@ exports.verify = async (req, res, next) => {
       include: [
         {
           model: Otp,
-          where: { userSlug: sequelize.col("User.slug") },
+          as:"otps",
           required: false,
+          // where: { userSlug: Sequelize.col("User.slug") },
+          separate: true,
           order: [["createdAt", "DESC"]],
           limit: 1,
         },
@@ -24,7 +26,10 @@ exports.verify = async (req, res, next) => {
         .status(400)
         .json({ code: 400, message: "User not found", data: {} });
     }
-    const latestOtp = userWithLatestOtp.Otps[0];
+    // console.log(userWithLatestOtp.otps[0]);
+    const latestOtp = userWithLatestOtp.otps[0];
+    // console.log(latestOtp);
+    
     if (!latestOtp) {
       return res
         .status(400)

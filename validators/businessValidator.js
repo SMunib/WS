@@ -43,6 +43,9 @@ const businessSchema = Joi.object({
   salesTax: Joi.number().optional().messages({
     "number.base": "Sales tax must be a number",
   }),
+
+  rating: Joi.number().optional(),
+  description: Joi.string().optional(),
 });
 
 module.exports = {

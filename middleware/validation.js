@@ -4,14 +4,15 @@ const { loginSchema } = require("../validators/loginValidator");
 const { businessSchema } = require("../validators/businessValidator");
 const { itemSchema } = require("../validators/itemValidator");
 
-const validate = (schema) => async (req, res, next) => {
-  // console.log(req.body);
-  try {
-    await schema.validateAsync(req.body);
-    next();
-  } catch (err) {
-    next(err);
-  }
+const validate = (schema) => {
+  return async (req, res, next) => {
+    try {
+      await schema.validateAsync(req.body); // Validating request body against schema
+      next(); // Proceed to the next middleware/controller if validation passes
+    } catch (err) {
+      next(err); // Pass the error to the error-handling middleware
+    }
+  };
 };
 
 module.exports = {

@@ -32,6 +32,14 @@ const Items = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    allowSides: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    numOfSides: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    }
   },
   {
     paranoid: true,
@@ -39,8 +47,12 @@ const Items = sequelize.define(
       beforeCreate: (token) => {
         token.slug = uuidv4();
       },
+      beforeValidate: (item, options) => {
+        if (item.allowSides && (item.numOfSides === null || item.numOfSides === undefined)) {
+          throw new Error("numOfSides is required if allowSides is true");
+        }
     },
   }
-);
+});
 
 module.exports = Items;

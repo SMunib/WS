@@ -6,7 +6,11 @@ const {
   Business,
   Items,
   businessHours,
+  menuItems,
+  Sides,
+  Orders
 } = require("../models/index");
+
 
 const defineAssociations = async () => {
   User.belongsTo(Role, {
@@ -58,6 +62,26 @@ const defineAssociations = async () => {
     foreignKey: "businessSlug",
     sourceKey: "slug",
   });
+
+  Items.belongsToMany(Sides, {
+    through: menuItems,
+    foreignKey: "itemSlug",
+    sourceKey: "slug",
+    otherKey: "sideSlug",
+    as: "sides",
+  });
+  Sides.belongsToMany(Items, {
+    through: menuItems,
+    foreignKey: "sideSlug",
+    sourceKey: "slug",
+    otherKey: "itemSlug",
+    as: "items",
+  });
+
+  Orders.belongsTo(User, {foreignKey:{name: 'userSlug',allowNull: false},targetKey:'slug',onDelete:"CASCADE"});
+  User.hasMany(Orders, {foreignKey:'userSlug',sourceKey:'slug',onDelete:'CASCADE'});
+  
+  
 };
 
 module.exports = defineAssociations;

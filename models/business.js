@@ -48,6 +48,15 @@ const Business = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    rating: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      defaultValue: 0,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     hooks: {

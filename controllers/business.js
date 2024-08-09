@@ -1,4 +1,11 @@
-const { User, Business, Items, businessHours } = require("../models/index");
+const {
+  User,
+  Business,
+  Items,
+  businessHours,
+  Sides,
+  menuItems,
+} = require("../models/index");
 const getPath = require("../utils/filehandler");
 const _ = require("lodash");
 
@@ -8,7 +15,6 @@ exports.details = async (req, res, next) => {
     const data = req.body;
     const userId = req.params.id;
 
-    console.log(req.files);
     const user = await User.findByPk(userId);
     if (!user)
       return res
@@ -46,6 +52,7 @@ exports.addProduct = async (req, res, next) => {
   const business = req.params.id;
   try {
     const path = getPath(displayPicture);
+    // console.log(data);
     const product = await Items.create({
       name: data.name,
       price: data.price,
@@ -53,16 +60,22 @@ exports.addProduct = async (req, res, next) => {
       description: data.description,
       displayPicture: path,
       businessSlug: business,
+      allowSides: data.allowSides,
+      numOfSides: data.numOfSides,
     });
+
     if (!product)
       return res.status(400).json({
         code: 400,
         message: "Item could not be added to the menu",
         data: {},
       });
-    return res
-      .status(200)
-      .json({ code: 200, message: "success", data: _.pick(product, ["name"]) });
+
+    return res.status(200).json({
+      code: 200,
+      message: "success",
+      data: _.pick(product, ["name", "price"]),
+    });
   } catch (err) {
     next(err);
   }
@@ -165,7 +178,65 @@ exports.timeAll = async (req, res, next) => {
         },
       }
     );
-    return res.json({ code: 200, message: "timings set successfully", data: timing });
+    return res.json({
+      code: 200,
+      message: "timings set successfully",
+      data: timing,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.showSides = async (req, res, next) => {
+  try {
+    const sides = await Sides.findAll({raw:true,attributes:['name','price']});
+    if (!sides)
+      return res.json({
+        code: 404,
+        message: "Error retrieving sides",
+        data: {},
+      });
+      // console.log(sides);
+    return res.json({
+      code: 200,
+      message: "Sides successfully retrieved",
+      data: sides
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.createSide = async (req, res, next) => {
+  const data = req.body;
+  try {
+    const side = await Sides.create({
+      name: data.name,
+      type: data.type,
+      price: data.price,
+    });
+    if (!side)
+      return res.json({
+        code: 400,
+        message: "side creation failed",
+        data: {},
+      });
+    const menuItem = await menuItems.create({
+      itemSlug: data.itemSlug,
+      sideSlug: side.slug,
+    });
+    if (!menuItem)
+      return res.json({
+        code: 400,
+        message: "Failed to add side to item",
+        data: {},
+      });
+    return res.json({
+      code: 200,
+      message: "side added",
+      data: _.pick(side,["name","price"]),
+    });
   } catch (err) {
     next(err);
   }

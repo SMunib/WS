@@ -5,6 +5,9 @@ const Otp = require("./otp");
 const Business = require("./business");
 const Items = require("./items");
 const businessHours = require("./businessHours");
+const Sides = require("./sides");
+const menuItems = require("./menuItems");
+const Orders = require("./order");
 
 module.exports = {
   User,
@@ -14,4 +17,7 @@ module.exports = {
   Business,
   Items,
   businessHours,
+  Sides,
+  menuItems,
+  Orders
 };

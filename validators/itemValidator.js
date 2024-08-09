@@ -17,6 +17,8 @@ const itemSchema = Joi.object({
     "any.required": "IsTaxable is a required field",
   }),
   description: Joi.optional(),
+  allowSides: Joi.optional(),
+  numOfSides: Joi.optional(),
 });
 
 module.exports = {
