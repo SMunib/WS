@@ -52,7 +52,6 @@ exports.addProduct = async (req, res, next) => {
   const business = req.params.id;
   try {
     const path = getPath(displayPicture);
-    // console.log(data);
     const product = await Items.create({
       name: data.name,
       price: data.price,

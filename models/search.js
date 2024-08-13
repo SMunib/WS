@@ -1,10 +1,9 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../startup/db");
 const { v4: uuidv4 } = require("uuid");
-const { userTypes } = require("../utils/types");
 
-const Role = sequelize.define(
-  "Role",
+const Search = sequelize.define(
+  "Search",
   {
     slug: {
       type: DataTypes.UUID,
@@ -13,14 +12,22 @@ const Role = sequelize.define(
       unique: true,
       primaryKey: true,
     },
-    role: {
-      type: DataTypes.ENUM,
-      values: Object.values(userTypes),
+    searchTerm: {
+      type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+    },
+    searchDate: {
+      type: DataTypes.TIME,
+      allowNull: true,
+    },
+    popularity: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 1,
     },
   },
   {
+    timestamps: true,
     hooks: {
       beforeCreate: (token) => {
         token.slug = uuidv4();
@@ -29,4 +36,4 @@ const Role = sequelize.define(
   }
 );
 
-module.exports = Role;
+module.exports = Search;

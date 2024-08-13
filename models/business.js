@@ -47,6 +47,10 @@ const Business = sequelize.define(
     displayPicture: {
       type: DataTypes.STRING,
       allowNull: true,
+      get() {
+        const rawValue = this.getDataValue("displayPicture");
+        return `${process.env.base_url}${rawValue}`;
+      },
     },
     rating: {
       type: DataTypes.FLOAT,

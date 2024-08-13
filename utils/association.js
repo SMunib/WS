@@ -8,14 +8,14 @@ const {
   businessHours,
   menuItems,
   Sides,
-  Orders
+  Orders,
+  Search,
 } = require("../models/index");
-
 
 const defineAssociations = async () => {
   User.belongsTo(Role, {
     foreignKey: "role",
-    sourceKey: "role",
+    targetKey: "role",
     onDelete: "CASCADE",
   });
   Role.hasMany(User, {
@@ -78,10 +78,26 @@ const defineAssociations = async () => {
     as: "items",
   });
 
-  Orders.belongsTo(User, {foreignKey:{name: 'userSlug',allowNull: false},targetKey:'slug',onDelete:"CASCADE"});
-  User.hasMany(Orders, {foreignKey:'userSlug',sourceKey:'slug',onDelete:'CASCADE'});
-  
-  
+  Orders.belongsTo(User, {
+    foreignKey: { name: "userSlug", allowNull: false },
+    targetKey: "slug",
+    onDelete: "CASCADE",
+  });
+  User.hasMany(Orders, {
+    foreignKey: "userSlug",
+    sourceKey: "slug",
+    onDelete: "CASCADE",
+  });
+  Search.belongsTo(User, {
+    foreignKey: "userSlug",
+    targetKey: "slug",
+    onDelete: "CASCADE",
+  });
+  User.hasMany(Search, {
+    foreignKey: "userSlug",
+    sourceKey: "slug",
+    onDelete: "CASCADE",
+  });
 };
 
 module.exports = defineAssociations;

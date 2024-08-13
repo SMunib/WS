@@ -31,6 +31,10 @@ const Items = sequelize.define(
     displayPicture: {
       type: DataTypes.STRING,
       allowNull: false,
+      get() {
+        const rawValue = this.getDataValue("displayPicture");
+        return `${process.env.base_url}${rawValue}`;
+      },
     },
     allowSides: {
       type: DataTypes.BOOLEAN,

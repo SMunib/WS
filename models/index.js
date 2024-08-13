@@ -8,6 +8,7 @@ const businessHours = require("./businessHours");
 const Sides = require("./sides");
 const menuItems = require("./menuItems");
 const Orders = require("./order");
+const Search = require("./search");
 
 module.exports = {
   User,
@@ -19,5 +20,6 @@ module.exports = {
   businessHours,
   Sides,
   menuItems,
-  Orders
+  Orders,
+  Search
 };
